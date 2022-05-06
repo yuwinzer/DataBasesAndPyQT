@@ -149,11 +149,10 @@ class ClientTransport(threading.Thread, QObject):
                         if ACTION in msg and msg[ACTION] == MESSAGE and TIME in msg and \
                                 SENDER in msg and MESSAGE_TEXT in msg:
                             # if msg[SENDER] != self.acc_name:
+                            LOGGER.debug(f'Получено сообщение от {msg[SENDER]}: {msg[MESSAGE_TEXT]}')
                             with database_lock:
                                 try:
-                                    self.database.add_message(msg[SENDER],
-                                                              msg[DESTINATION],
-                                                              msg[MESSAGE_TEXT])
+                                    self.database.add_message(msg[SENDER], 'i', msg[MESSAGE_TEXT])
                                     self.new_message.emit(msg[SENDER])
                                 except Exception as err:
                                     LOGGER.error(f'Ошибка взаимодействия с базой данных: {err}')
@@ -161,7 +160,7 @@ class ClientTransport(threading.Thread, QObject):
                             #     print(f'ЛИЧНО [{msg[SENDER]}]: {msg[MESSAGE_TEXT]}')
                             # else:
                             #     print(f'[{msg[SENDER]}]: {msg[MESSAGE_TEXT]}')
-                            LOGGER.debug(f'Получено сообщение от пользователя {msg[SENDER]}: {msg[MESSAGE_TEXT]}')
+                            # LOGGER.debug(f'Получено сообщение от пользователя {msg[SENDER]}: {msg[MESSAGE_TEXT]}')
                         else:
                             LOGGER.error(f'Получено некорректное сообщение с сервера: {msg}')
                 finally:
@@ -183,7 +182,7 @@ class ClientTransport(threading.Thread, QObject):
                 except Exception as err:
                     LOGGER.error(f'Контакт "{contact}" добавить не удалось: {err}')
                 else:
-                    print(f'Контакт "{contact}" добавлен')
+                    return True
         else:
             LOGGER.error(f'Контакт "{contact}" добавить не удалось, ошибка сервера')
 
@@ -197,7 +196,7 @@ class ClientTransport(threading.Thread, QObject):
                 except Exception as err:
                     LOGGER.error(f'Контакт "{contact}" удалить не удалось: {err}')
                 else:
-                    print(f'Контакт "{contact}" удален')
+                    return True
         else:
             LOGGER.error(f'Контакт "{contact}" удалить не удалось, ошибка сервера')
 
@@ -301,7 +300,7 @@ class ClientTransport(threading.Thread, QObject):
         }
         LOGGER.debug(f'Добавляю сообщение в базу {msg}')
         with database_lock:
-            self.database.add_message(self.acc_name, dest_name, msg)
+            self.database.add_message(dest_name, 'o', msg)
 
         LOGGER.debug(f'Отправляю сообщение {msg}')
         with sock_lock:

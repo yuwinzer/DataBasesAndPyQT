@@ -76,7 +76,7 @@ class ClientMainWindow(QMainWindow):
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.ContextMenu:
-            print(source.indexAt(event.pos()))
+            # print(source.indexAt(event.pos()))
             if source is self.ui.UserList:
                 menu = QMenu()
                 menu.addAction('Добавить контакт')
@@ -85,6 +85,7 @@ class ClientMainWindow(QMainWindow):
                         item = source.indexAt(event.pos())
                         LOGGER.debug(f'Добавляю контакт: {item.data()}')
                         if item and not self.database.check_contact(item.data()):
+                            self.ui.usersTab.setCurrentIndex(1)
                             self.transport.add_contact(item.data())
                             self.update_contacts_list()
                     return True
@@ -106,14 +107,6 @@ class ClientMainWindow(QMainWindow):
                     LOGGER.error(f'Не удалось удалить контакт: {e}')
         return super().eventFilter(source, event)
 
-    # def add_contact_context(self):
-    #     # Create a menu
-    #     menu = QMenu("Menu", self)
-    #     menu.addAction(self.mAction1)
-    #     menu.addAction(self.mAction2)
-    #     # Show the context menu.
-    #     menu.exec_(Qt.view.mapToGlobal())
-
     # Деактивировать поля ввода
     def set_disabled_input(self):
         # Надпись  - получатель.
@@ -133,7 +126,7 @@ class ClientMainWindow(QMainWindow):
         elif self.ui.usersTab.currentWidget().objectName() == 'Conts':
             self.transport.update_db_list(GET_CONTACTS)
             self.update_contacts_list()
-        print(self.ui.usersTab.currentWidget().objectName())
+        # print(self.ui.usersTab.currentWidget().objectName())
 
     # Функция, обновляющая контакт-лист
     def update_contacts_list(self):
@@ -177,39 +170,44 @@ class ClientMainWindow(QMainWindow):
     # Функция отправки сообщения пользователю.
     def send_message(self):
         # Текст в поле, проверяем что поле не пустое затем забирается сообщение и поле очищается
-        message_text = self.ui.EnterTE.toPlainText()
+        msg_text = self.ui.EnterTE.toPlainText()
         self.ui.EnterTE.clear()
-        if not message_text:
+        if not msg_text:
             return
-        try:
-            self.transport.send_text_message(self.current_chat, message_text)
-        except ServerError as err:
-            self.messages.critical(self, 'Ошибка', err.text)
-        except OSError as err:
-            if err.errno:
-                self.messages.critical(self, 'Ошибка', 'Потеряно соединение с сервером!')
-                self.close()
-            self.messages.critical(self, 'Ошибка', 'Таймаут соединения!')
-        except (ConnectionResetError, ConnectionAbortedError):
-            self.messages.critical(self, 'Ошибка', 'Потеряно соединение с сервером!')
-            self.close()
-        else:
-            self.database.save_message(self.current_chat, 'out', message_text)
-            LOGGER.debug(f'Отправлено сообщение для {self.current_chat}: {message_text}')
+        self.transport.send_text_message(self.current_chat, msg_text)
+        self.history_list_update()
+        # try:
+        #     self.transport.send_text_message(self.current_chat, message_text)
+        # except ServerError as err:
+        #     self.messages.critical(self, 'Ошибка', err.text)
+        # except OSError as err:
+        #     if err.errno:
+        #         self.messages.critical(self, 'Ошибка', 'Потеряно соединение с сервером!')
+        #         self.close()
+        #     self.messages.critical(self, 'Ошибка', 'Таймаут соединения!')
+        # except (ConnectionResetError, ConnectionAbortedError):
+        #     self.messages.critical(self, 'Ошибка', 'Потеряно соединение с сервером!')
+        #     self.close()
+        # else:
+        #     self.database.save_message(self.current_chat, 'o', message_text)
+        #     LOGGER.debug(f'Отправлено сообщение для {self.current_chat}: {message_text}')
             # self.history_list_update()
 
     # Заполняем историю сообщений.
     def history_list_update(self):
         # Получаем историю сортированную по дате
+        LOGGER.debug(f'Загрузка истории сообщений')
         list_messages = sorted(self.database.get_history(self.current_chat),
                                key=lambda item: item[3])
         # Если модель не создана, создадим.
         if not self.history_model:
+            LOGGER.debug(f'Создание модели истории сообщений')
             self.history_model = QStandardItemModel()
             self.ui.MsgField.setModel(self.history_model)
         # Очистим от старых записей
         self.history_model.clear()
         # Берём не более 20 последних записей.
+        # LOGGER.debug(f'Выводим последние 20 сообщений')
         length = len(list_messages)
         start_index = 0
         if length > 20:
@@ -219,17 +217,17 @@ class ClientMainWindow(QMainWindow):
         # Записи в обратном порядке, поэтому выбираем их с конца и не более 20
         for i in range(start_index, length):
             item = list_messages[i]
-            if item[1] == 'in':
-                mess = QStandardItem(f'Входящее от {item[3].replace(microsecond=0)}:\n {item[2]}')
+            if item[1] == 'i':
+                mess = QStandardItem(f'{self.current_chat} ({item[3].replace(microsecond=0)}):\n {item[2]}')
                 mess.setEditable(False)
-                mess.setBackground(QBrush(QColor(255, 213, 213)))
+                mess.setBackground(QBrush(QColor(224, 233, 255)))
                 mess.setTextAlignment(Qt.AlignLeft)
                 self.history_model.appendRow(mess)
             else:
-                mess = QStandardItem(f'Исходящее от {item[3].replace(microsecond=0)}:\n {item[2]}')
+                mess = QStandardItem(f'{self.transport.acc_name} ({item[3].replace(microsecond=0)}):\n {item[2]}')
                 mess.setEditable(False)
                 mess.setTextAlignment(Qt.AlignRight)
-                mess.setBackground(QBrush(QColor(204, 255, 204)))
+                mess.setBackground(QBrush(QColor(224, 255, 233)))
                 self.history_model.appendRow(mess)
         self.ui.MsgField.scrollToBottom()
 
@@ -249,15 +247,15 @@ class ClientMainWindow(QMainWindow):
                     self.current_chat = sender
                     self.set_active_user()
             else:
-                print('NO')
                 # Раз нет, спрашиваем хотим ли добавить юзера в контакты.
                 if self.messages.question(self, 'Новое сообщение',
                                           f'Получено новое сообщение от {sender}.\n '
                                           f'Данного пользователя нет в вашем контакт-листе.\n'
                                           f' Добавить в контакты и открыть чат с ним?',
                                           QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
-                    self.add_contact(sender)
+                    self.transport.add_contact(sender)
                     self.current_chat = sender
+                    self.update_contacts_list()
                     self.set_active_user()
 
     # Слот потери соединения

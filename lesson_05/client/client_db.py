@@ -29,14 +29,14 @@ class ClientDB:
     class MessageHistory(Base):
         __tablename__ = 'my_messages'
         id = Column(Integer, primary_key=True)
-        from_name = Column(String)
-        to_name = Column(String)
+        contact = Column(String)
+        direction = Column(String)
         msg = Column(Text)
         date = Column(DateTime)
 
-        def __init__(self, from_name, to_name, msg):
-            self.from_name = from_name
-            self.to_name = to_name
+        def __init__(self, contact, direction, msg):
+            self.contact = contact
+            self.direction = direction
             self.msg = msg
             self.date = datetime.now()
 
@@ -78,8 +78,8 @@ class ClientDB:
         self.session.commit()
 
     # Добавление сообщения
-    def add_message(self, from_name, to_name, msg):
-        self.session.add(self.MessageHistory(from_name, to_name, msg))
+    def add_message(self, contact, direction, msg):
+        self.session.add(self.MessageHistory(contact, direction, msg))
         self.session.commit()
 
     # Чтение пользователей
@@ -93,16 +93,16 @@ class ClientDB:
     # Чтение сообщений
     def get_history(self, contact):
         query = self.session.query(self.MessageHistory).filter_by(contact=contact)
-        return [(m.from_name, m.to_name, m.msg, str(m.date)) for m in query.all()]
+        return [(m.contact, m.direction, m.msg, m.date) for m in query.all()]
 
     # Чтение сообщений
-    # def get_messages(self, from_name=None, to_name=None):
+    # def get_messages(self, contact=None, direction=None):
     #     query = self.session.query(self.MessageHistory)
-    #     if from_name:
-    #         query = query.filter_by(from_name=from_name)
-    #     if to_name:
-    #         query = query.filter_by(to_name=to_name)
-    #     return [(m.from_name, m.to_name, m.msg, str(m.date)) for m in query.all()]
+    #     if contact:
+    #         query = query.filter_by(contact=contact)
+    #     if direction:
+    #         query = query.filter_by(direction=direction)
+    #     return [(m.contact, m.direction, m.msg, str(m.date)) for m in query.all()]
 
     # Функция проверяет наличие пользователя в таблице Известных Пользователей
     def check_user(self, name):
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     print(test_db.check_user('test1'))
     print(test_db.check_user('test10'))
     print(test_db.get_messages('test2'))
-    print(test_db.get_messages(to_name='test2'))
+    print(test_db.get_messages(direction='test2'))
     print(test_db.get_messages('test3'))
     test_db.del_contact('test4')
     print(test_db.get_contacts())
