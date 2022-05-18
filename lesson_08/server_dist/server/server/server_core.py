@@ -16,16 +16,15 @@ import hmac
 import binascii
 import logging
 import threading
-import configparser
-from time import time, localtime, strftime
+# import configparser
+from time import localtime, strftime
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 
 sys.path.append('../')
-import log.server_log_config
 from common.globals import *
-from common.utils import get_message, send_message, handle_parameters, is_port_bad, is_ip_bad
+from common.utils import get_message, send_message
 from log.decorator import log
-from server.server_db import ServerDB
+# from server.server_db import ServerDB
 
 # from PyQt5.QtWidgets import QApplication, QMessageBox
 # from PyQt5.QtCore import QTimer
@@ -83,7 +82,9 @@ class ServerVerifier(type):
 
 
 class Core(threading.Thread, metaclass=ServerVerifier):
-
+    # """Класс обработки сообщений и работы с сокетами. Принимает:
+    # базу данных, ip-адрес сервера, порт сервера
+    # """
     serv_port = CheckoutPort()
 
     def __init__(self, database, serv_ip, serv_port):

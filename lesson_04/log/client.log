@@ -1,0 +1,10 @@
+2022-05-17 12:53:38,939 DEBUG client.py ========================================[ CLIENT LOG START TIME: Tue, 17 May 2022 12:53:38 ]========================================
+2022-05-17 12:53:39,067 DEBUG decorator.py "utils.py/handle_parameters" Вызывает: "common.utils/is_ip_bad("('192.168.0.104',)" {})"; Результат: "False"
+2022-05-17 12:53:39,083 DEBUG decorator.py "utils.py/check_default_param" Вызывает: "common.utils/is_port_bad("(7777,)" {})"; Результат: "False"
+2022-05-17 12:53:39,083 DEBUG utils.py Внешний парметр PORT не определен, использую (PORT=7777)
+2022-05-17 12:53:39,090 DEBUG decorator.py "utils.py/handle_parameters" Вызывает: "common.utils/check_default_param("({'-a': ['192.168.0.104', <function log.<locals>.decor at 0x00000220673A69D0>, '127.0.0.1', 'IP'], '-p': [7777, <function log.<locals>.decor at 0x00000220673A6AF0>, 7777, 'PORT'], '-n': [None, <function log.<locals>.decor at 0x00000220673A6C10>, None, 'NAME']}, '-p')" {})"; Результат: "None"
+2022-05-17 12:53:39,100 DEBUG decorator.py "utils.py/check_default_param" Вызывает: "common.utils/is_name_bad("(None,)" {})"; Результат: "False"
+2022-05-17 12:53:39,101 DEBUG utils.py Внешний парметр NAME не определен, использую (NAME=None)
+2022-05-17 12:53:39,108 DEBUG decorator.py "utils.py/handle_parameters" Вызывает: "common.utils/check_default_param("({'-a': ['192.168.0.104', <function log.<locals>.decor at 0x00000220673A69D0>, '127.0.0.1', 'IP'], '-p': [7777, <function log.<locals>.decor at 0x00000220673A6AF0>, 7777, 'PORT'], '-n': [None, <function log.<locals>.decor at 0x00000220673A6C10>, None, 'NAME']}, '-n')" {})"; Результат: "None"
+2022-05-17 12:53:39,108 DEBUG utils.py Использую: IP=192.168.0.104 PORT=7777 NAME=ANY
+2022-05-17 12:53:39,110 DEBUG decorator.py "client.py/main" Вызывает: "common.utils/handle_parameters("()" {'ip': '127.0.0.1', 'port': 7777})"; Результат: "('192.168.0.104', 7777, None)"
